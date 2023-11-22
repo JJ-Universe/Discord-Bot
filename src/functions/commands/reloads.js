@@ -1,4 +1,4 @@
-const client = require("../client");
+const client = require("../../client");
 
 async function reloadCommands(name) {
     const command = client.commands.get(name) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(name));

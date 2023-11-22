@@ -5,3 +5,4 @@ node_modules/
 >>>>>>> 0e8dbc2bed1bbf2c72a3db13eb3aaba5a285514b
 src/config/index.js
 node_modules/
+.env

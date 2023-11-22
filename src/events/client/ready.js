@@ -11,6 +11,6 @@ client.on("ready", async () => {
                 type: ActivityType.Playing
             }
         ],
-        status: "online"
+        status: "dnd"
     })
 })

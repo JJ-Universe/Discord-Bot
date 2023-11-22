@@ -1,5 +1,6 @@
 const client = require("../../client");
 const { PermissionsBitField } = require("discord.js");
+const handleCooldown = require('../../functions/commands/cooldown');
 const { clientPrefix, developers } = require("../../config/index")
 
 client.on("messageCreate", async (message) => {
@@ -15,46 +16,27 @@ client.on("messageCreate", async (message) => {
 
         let command = client.commands.get(cmd)
 
-        const memberChannel = message.member.voice.channelId
-        const clientChannel = message.guild.members.me.voice.channelId;
-
         if (!command) command = client.commands.get(client.aliases.get(cmd))
 
         if (command) {
-            if (command.developerOnly) {
-                if (!developers.includes(message.author.id)) {
-                    return message.channel.send(`:x: ${command.name} is a developer only command`)
+
+            const { name, developerOnly, userPermissions, clientPermissions } = command;
+
+            const cooldownMessage = handleCooldown(message.author, command);
+            if (cooldownMessage) return interaction.reply(cooldownMessage);
+
+            if (developerOnly && !developers.includes(message.author.id)) {
+                return message.channel.send(`:x: ${name} is a developer only command`);
+            }
+
+            const checkPermissions = (permissions, subject, subjectType) => {
+                if (permissions && !message.channel.permissionsFor(subject).has(PermissionsBitField.resolve(permissions))) {
+                    return message.channel.send(`:x: ${subjectType} do not have the required permissions to use this command. You need the following permissions: ${permissions.join(", ")}`);
                 }
-            }
+            };
 
-            if (command.userPermissions) {
-                if (!message.channel.permissionsFor(message.member).has(PermissionsBitField.resolve(command.userPermissions || []))) {
-                    return message.channel.send(`:x: You do not have the required permissions to use this command. You need the following permissions: ${command.userPermissions.join(", ")}`)
+                if (checkPermissions(userPermissions, message.member, 'You') || checkPermissions(clientPermissions, message.guild.members.me, 'I')) return;
                 }
-            }
-
-            if (command.clientPermissions) {
-                if (!message.channel.permissionsFor(message.guild.members.me).has(PermissionsBitField.resolve(command.clientPermissions || []))) {
-                    return message.channel.send(`:x: I do not have the required permissions to use this command. I need the following permissions: ${command.clientPermissions.join(", ")}`)
-                }
-            }
-
-            if (command.guildOnly && !message.guildId) {
-                return message.channel.send(`:x: ${command.name} is a guild only command`)
-            }
-
-            if (command.inVoice && !memberChannel) {
-                if (!memberChannel) {
-                    return message.channel.send(`:x: You must be in a voice channel to use this command.`)
-                }
-            }
-
-            if (command.sameVoice && memberChannel !== clientChannel) {
-                return message.channel.send(`:x: You must be in the same voice channel as me to use this command.`)
-            }
-
-            if (command) command.run(client, message, args);
-        }
     } catch (err) {
         console.log(`🟥 An error occurred while executing the messageCreate event:`)
         console.log(err)

@@ -1,5 +1,5 @@
 const { Client, Message } = require("discord.js");
-const { reloadSlash } = require("../../functions/reloads");
+const { reloadSlash } = require("../../functions/commands/reloads");
 
 module.exports = {
     name: "reloadslash",
