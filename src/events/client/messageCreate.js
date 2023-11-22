@@ -1,46 +1,54 @@
 const client = require("../../client");
 const { PermissionsBitField } = require("discord.js");
-const handleCooldown = require('../../functions/commands/cooldown');
-const { clientPrefix, developers } = require("../../config/index")
+const handleCooldown = require('../../functions/cooldown');
+const { clientPrefix, developers, ENV } = require("../../config/index")
 
 client.on("messageCreate", async (message) => {
+    let cmd;
     try {
         if (message.author.bot || !message.guild || !message.content.startsWith(clientPrefix)) {
             return;
         }
 
         const args = message.content.slice(clientPrefix.length).trim().split(/ +/g);
-        const cmd = args.shift().toLowerCase();
+        cmd = args.shift().toLowerCase();
+        const command = client.commands.get(cmd) || client.commands.find(command => command.aliases && command.aliases.includes(cmd));
 
         if (cmd.length === 0) return;
 
-        let command = client.commands.get(cmd)
-
         if (!command) command = client.commands.get(client.aliases.get(cmd))
 
-        if (command) {
+        if (!command) {
+            return message.channel.send(`:x: ${cmd} is not a valid command`);
+        }1
 
+        const cooldownMessage = handleCooldown(message.author, command);
+        if (cooldownMessage) return message.channel.send(`:x: ${cooldownMessage}`);
+
+        if (command) {
             const { name, developerOnly, userPermissions, clientPermissions } = command;
 
             const cooldownMessage = handleCooldown(message.author, command);
-            if (cooldownMessage) return interaction.reply(cooldownMessage);
+            if (cooldownMessage) return message.reply(cooldownMessage);
 
-            if (developerOnly && !developers.includes(message.author.id)) {
-                return message.channel.send(`:x: ${name} is a developer only command`);
-            }
+            const developerOnlyMessage = checkDeveloperOnly(message.author, command);
+            if (developerOnlyMessage) return message.channel.send(`:x: ${developerOnlyMessage}`);
 
-            const checkPermissions = (permissions, subject, subjectType) => {
-                if (permissions && !message.channel.permissionsFor(subject).has(PermissionsBitField.resolve(permissions))) {
-                    return message.channel.send(`:x: ${subjectType} do not have the required permissions to use this command. You need the following permissions: ${permissions.join(", ")}`);
-                }
-            };
+            const userPermissionsMessage = checkUserPermissions(message.channel, message.member, command);
+            if (userPermissionsMessage) return message.channel.send(`:x: ${userPermissionsMessage}`);
 
-                if (checkPermissions(userPermissions, message.member, 'You') || checkPermissions(clientPermissions, message.guild.members.me, 'I')) return;
-                }
-    } catch (err) {
-        console.log(`🟥 An error occurred while executing the messageCreate event:`)
-        console.log(err)
+            const clientPermissionsMessage = checkClientPermissions(message.channel, message.guild.me, command);
+            if (clientPermissionsMessage) return message.channel.send(`:x: ${clientPermissionsMessage}`);
+        }
 
-        return message.channel.send(`:x: An error occurred while executing the messageCreate event:\n${err}`)
+        await command.execute(message, args);
+    } catch (error) {
+        console.error(`Error executing command ${cmd}:`, error);
+
+        const errorMessage = ENV === 'development'
+            ? `There was an error while executing this command: ${error.message}`
+            : 'There was an error while executing this command!';
+
+        await message.channel.send(`:x: ${errorMessage}`);
     }
-})
+});

@@ -1,9 +1,9 @@
 const { Client, Message } = require("discord.js");
-const { reloadCommands } = require("../../functions/commands/reloads");
+const { reloadCommands } = require("../../functions/reloads");
 
 module.exports = {
     name: "reloadcommand",
-    description: "Reloads a command",
+    description: "Reloads all commands",
     developerOnly: true,
 
     /**
@@ -13,7 +13,7 @@ module.exports = {
      * @param {String[]} args 
      */
     run: async (client, message, args) => {
-        const command = args[0]
+        const command = args[0] || null;
         const output = await reloadCommands(command);
 
         return message.reply(output);

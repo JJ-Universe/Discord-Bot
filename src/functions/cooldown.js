@@ -3,15 +3,11 @@ const { Collection } = require("discord.js");
 const cooldowns = new Collection();
 
 function handleCooldown(user, command) {
-    if (!cooldowns.has(command.name)) {
-        cooldowns.set(command.name, new Collection());
-    }
-
     const now = Date.now();
     const timestamps = cooldowns.get(command.name);
     const cooldownAmount = (command.cooldown || 3) * 1000;
 
-    if (timestamps.has(user.id)) {
+    if (timestamps && timestamps.has(user.id)) {
         const expirationTime = timestamps.get(user.id) + cooldownAmount;
 
         if (now < expirationTime) {
@@ -20,8 +16,12 @@ function handleCooldown(user, command) {
         }
     }
 
-    timestamps.set(user.id, now);
-    setTimeout(() => timestamps.delete(user.id), cooldownAmount);
+    if (!timestamps) {
+        cooldowns.set(command.name, new Collection());
+    }
+
+    cooldowns.get(command.name).set(user.id, now);
+    setTimeout(() => cooldowns.get(command.name).delete(user.id), cooldownAmount);
 }
 
 module.exports = handleCooldown;

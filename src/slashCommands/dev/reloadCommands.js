@@ -1,5 +1,5 @@
 const { ApplicationCommandOptionType } = require("discord.js");
-const { reloadCommands } = require("../../functions/commands/reloads");
+const { reloadCommands } = require("../../functions/reloads");
 
 module.exports = {
     name: "reloadcommand",
