@@ -1,6 +1,5 @@
 const { PermissionsBitField } = require("discord.js");
 const client = require("../../client");
-const handleCooldown = require('../../functions/cooldown');
 const { checkDeveloperOnly, checkUserPermissions, checkClientPermissions } = require('../../functions/commandChecks');
 const { developers, ENV } = require("../../config/index")
 
@@ -16,10 +15,6 @@ client.on("interactionCreate", async (interaction) => {
                 ephemeral: true,
             });
         }
-
-        // Cooldown system
-        const cooldownMessage = handleCooldown(interaction.user, command);
-        if (cooldownMessage) return interaction.reply(cooldownMessage);
 
         const developerOnlyMessage = checkDeveloperOnly(interaction.user, command);
         if (developerOnlyMessage) return interaction.reply({ content: developerOnlyMessage, ephemeral: true });

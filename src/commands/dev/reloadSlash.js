@@ -13,8 +13,12 @@ module.exports = {
      * @param {String[]} args 
      */
     run: async (client, message, args) => {
-        const command = args[0] || null;
-        const output = await reloadSlash(command);
+        const command = args && args[0] ? args[0] : null;
+        if (command && !client.commands.has(command)) {
+            return message.reply(`Command not found: ${command}`);
+        }
+        
+        const output = await reloadSlash(client, command);
 
         return message.reply(output);
     }

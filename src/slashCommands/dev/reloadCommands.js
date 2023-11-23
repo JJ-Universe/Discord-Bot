@@ -15,9 +15,13 @@ module.exports = {
     ],
 
     run: async (client, interaction, args) => {
-        const command = interaction.options.getString("command");
-        const output = await reloadCommands(command);
-
+        const command = args && args[0] ? args[0] : null;
+        if (command && !client.commands.has(command)) {
+            return message.reply(`Command not found: ${command}`);
+        }
+        
+        const output = await reloadCommands(client, command);
+        
         interaction.reply(output);
     }
 }

@@ -10,6 +10,7 @@ async function loadCommands(client) {
             const pull = require(`../commands/${dir}/${file}`);
 
             if (pull.name) {
+                pull.category = dir;
                 client.commands.set(pull.name, pull);
                 console.log(`🟩 Loaded Command : ${pull.name}`);
             } else {
@@ -29,6 +30,7 @@ async function loadSlashCommands(client) {
             const pull = require(`../slashCommands/${dir}/${file}`);
 
             if (pull.name) {
+                pull.category = dir;
                 client.slashCommands.set(pull.name, pull);
                 console.log(`🟩 Loaded Slash Command : ${pull.name}`);
             } else {
