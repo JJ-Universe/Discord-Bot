@@ -10,20 +10,20 @@ module.exports = {
             name: "command",
             description: "The slash command to reload",
             type: ApplicationCommandOptionType.String,
-            required: true
+            required: false
         }
     ],
 
     /**
      * 
      * @param {Client} client 
-     * @param {CommandInteraction} interaction 
+     * @param {Interaction} interaction
      * @param {String[]} args 
      */
     run: async (client, interaction, args) => {
         const command = args && args[0] ? args[0] : null;
         if (command && !client.commands.has(command)) {
-            return message.reply(`Command not found: ${command}`);
+            return interaction.reply(`Command not found: ${command}`);
         }
         
         const output = await reloadSlash(client, command);

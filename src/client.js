@@ -43,4 +43,12 @@ process.on('uncaughtException', error => {
     console.error(error)
 })
 
+process.on('exit', async () => {
+    const commands = await client.application.commands.fetch();
+
+    commands.forEach(async (command) => {
+        await client.application.commands.delete(command.id);
+    });
+});
+
 module.exports = client;

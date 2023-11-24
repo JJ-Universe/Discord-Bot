@@ -18,4 +18,17 @@ client.on("ready", async () => {
             status: "dnd"
         });
     }, 30000);
+
+    const commands = await client.application.commands.fetch();
+    for (const command of commands.values()) {
+        await client.application.commands.delete(command.id);
+    }
+
+    const data = Array.from(client.slashCommands.values()).map(command => ({
+        name: command.name,
+        description: command.description,
+        options: command.options,
+    }));
+
+    await client.application.commands.set(data);
 })
